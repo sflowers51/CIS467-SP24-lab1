@@ -246,75 +246,97 @@ app.delete("/prayers/:id", async (req, res) => {
   }
 });
 
-// GET /api/v1/prayers/:id/likes
-app.get("/prayers/:id/likes", async (req, res) => {
+// Get all likes for a prayer
+app.get('/prayers/:id/likes', async (req, res) => {
+  const { id: prayerID } = req.params;
+
   try {
     const conn = await pool.getConnection();
 
-    const [likes] = await conn.query("SELECT * FROM likes WHERE prayerID=?", [req.params.id]);
+    // Check if the prayer exists
+    const [existingPrayer] = await conn.query("SELECT * FROM prayers WHERE prayerID = ?", [prayerID]);
+    if (existingPrayer.length === 0) {
+      conn.release();
+      return res.status(404).json({ message: "Prayer not found" });
+    }
+
+    // Fetch all likes for the prayer
+    const [likes] = await conn.query("SELECT * FROM likes WHERE prayerID = ?", [prayerID]);
 
     conn.release();
-
     res.json(likes);
   } catch (err) {
     console.error("Error fetching likes:", err);
-    res.status(500).json({ message: "error" });
+    res.status(500).send("Error fetching likes");
   }
 });
 
-// POST /api/v1/prayers/:id/likes
-app.post("/prayers/:id/likes", async (req, res) => {
+// Like a prayer
+// Like a prayer
+app.post('/prayers/:id/likes', async (req, res) => {
+  const { userID } = req.user;
+  const { id: prayerID } = req.params;
+
   try {
     const conn = await pool.getConnection();
 
-    // Assuming req.user contains current user's ID
-    const userID = req.user.id;
-    const prayerID = req.params.id;
-
-    // Check if like already exists
-    const [existingLikes] = await conn.query("SELECT * FROM likes WHERE prayerID=? AND userID=?", [prayerID, userID]);
-    if (existingLikes.length > 0) {
+    // Check if the prayer exists
+    const [existingPrayer] = await conn.query("SELECT * FROM prayers WHERE prayerID = ?", [prayerID]);
+    if (existingPrayer.length === 0) {
       conn.release();
-      res.status(409).json({ message: "Like already exists" });
-      return;
+      return res.status(404).json({ message: "Prayer not found" });
     }
 
-    // Insert like into database
-    const [result] = await conn.query("INSERT INTO likes (prayerID, userID) VALUES (?, ?)", [prayerID, userID]);
+    // Check if the like already exists
+    const [existingLike] = await conn.query("SELECT * FROM likes WHERE prayerID = ? AND userID = ?", [prayerID, userID]);
+    if (existingLike.length > 0) {
+      conn.release();
+      return res.status(409).json({ message: "Like already exists" });
+    }
+
+    // Generate a unique like ID
+    const likeID = Math.floor(Math.random() * 1000000); // Assuming likeID is a number
+
+    // Add the like with the current time and generated like ID
+    const likedTime = new Date().toISOString(); // Get the current time in ISO format
+    await conn.query("INSERT INTO likes (prayerID, userID, likedTime) VALUES (?, ?, '2024-02-27 08:30:15')", [prayerID, userID, likedTime]);
 
     conn.release();
-
-    res.status(201).json({ likeID: result.insertId, prayerID, userID });
+    res.status(201).json({ message: "Like added successfully", likeID, likedTime });
   } catch (err) {
-    console.error("Error liking prayer:", err);
-    res.status(500).json({ message: "error" });
+    console.error("Error adding like:", err);
+    res.status(500).send("Error adding like");
   }
 });
 
-// DELETE /api/v1/prayers/:id/likes
-app.delete("/prayers/:id/likes", async (req, res) => {
+
+// Unlike a prayer
+// Unlike a prayer
+app.delete('/prayers/:id/likes', async (req, res) => {
+  const { userID } = req.user;
+  const { id: prayerID } = req.params;
+
   try {
     const conn = await pool.getConnection();
 
-    // Assuming req.user contains current user's ID
-    const userID = req.user.id;
-    const prayerID = req.params.id;
+    // Check if the like exists
+    const [existingLike] = await conn.query("SELECT * FROM likes WHERE prayerID = ? AND userID = ?", [prayerID, userID]);
+    if (existingLike.length === 0) {
+      conn.release();
+      return res.status(404).json({ message: "Like not found" });
+    }
 
     // Delete the like
-    const [result] = await conn.query("DELETE FROM likes WHERE prayerID=? AND userID=?", [prayerID, userID]);
+    await conn.query("DELETE FROM likes WHERE prayerID = ? AND userID = ?", [prayerID, userID]);
 
     conn.release();
-
-    if (result.affectedRows > 0) {
-      res.status(204).send();
-    } else {
-      res.status(404).json({ message: "Like not found" });
-    }
+    res.status(204).send();
   } catch (err) {
-    console.error("Error unliking prayer:", err);
-    res.status(500).json({ message: "error" });
+    console.error("Error removing like:", err);
+    res.status(500).send("Error removing like");
   }
 });
+
 
 
 
