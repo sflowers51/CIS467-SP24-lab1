@@ -299,6 +299,13 @@ app.get('/prayers/:id/likes', async (req, res) => {
 app.post("/prayers/:id/likes", async (req, res) => {
   const { id } = req.params;
   const { user } = req;
+  
+  // Check if the user ID is 4
+  if (user.id !== 4) {
+    res.status(403).send("Forbidden");
+    return;
+  }
+
   try {
     const connection = await pool.getConnection();
     const [existingPrayer] = await connection.query("SELECT * FROM prayers WHERE prayerID=?", [id]);
@@ -326,6 +333,13 @@ app.post("/prayers/:id/likes", async (req, res) => {
 app.delete("/prayers/:id/likes", async (req, res) => {
   const { id } = req.params;
   const { user } = req;
+  
+  // Check if the user ID is 4
+  if (user.id !== 4) {
+    res.status(403).send("Forbidden");
+    return;
+  }
+
   try {
     const connection = await pool.getConnection();
     const [existingPrayer] = await connection.query("SELECT * FROM prayers WHERE prayerID=?", [id]);
@@ -345,13 +359,14 @@ app.delete("/prayers/:id/likes", async (req, res) => {
     await connection.query("DELETE FROM likes WHERE userID=? AND prayerID=?", [user.id, id]);
     connection.release();
     
-    res.status(204)
-    console.log("Successfully unliked")
+    res.status(204).send("Successfully unliked");
+    console.log("Successfully unliked");
   } catch (err) {
     console.error("Error unliking prayer:", err.message);
     res.status(500).send("Error unliking prayer");
   }
 });
+
 
 // GET all saves of prayer with given id (by all users)
 app.get("/prayers/:id/saves", async (req, res) => {
@@ -370,10 +385,17 @@ app.get("/prayers/:id/saves", async (req, res) => {
   }
 });
 
-//save prayer
+// Save a prayer
 app.post("/prayers/:id/saves", async (req, res) => {
   const { id } = req.params;
   const { user } = req;
+  
+  // Check if the user ID is 4
+  if (user.id !== 4) {
+    res.status(403).send("Forbidden");
+    return;
+  }
+
   try {
     const connection = await pool.getConnection();
     const [existingPrayer] = await connection.query("SELECT * FROM prayers WHERE prayerID=?", [id]);
@@ -382,8 +404,8 @@ app.post("/prayers/:id/saves", async (req, res) => {
       res.status(404).send("Prayer not found");
       return;
     }
-    const [existingLike] = await pool.query("SELECT * FROM saves WHERE userID=? AND prayerID=?", [user.id, id]);
-    if (existingLike.length > 0) {
+    const [existingSave] = await pool.query("SELECT * FROM saves WHERE userID=? AND prayerID=?", [user.id, id]);
+    if (existingSave.length > 0) {
       res.status(409).send("Already Saved");
       return;
     }
@@ -392,8 +414,8 @@ app.post("/prayers/:id/saves", async (req, res) => {
     await pool.query("INSERT INTO saves (userID, prayerID, savedTime) VALUES (?, ?, ?)", [user.id, id, formattedDateTime]);
     res.status(201).send("Successfully Saved Prayer");
   } catch (err) {
-    console.error("Error liking prayer:", err.message);
-    res.status(500).send("Error liking prayer");
+    console.error("Error saving prayer:", err.message);
+    res.status(500).send("Error saving prayer");
   }
 });
 
@@ -401,6 +423,13 @@ app.post("/prayers/:id/saves", async (req, res) => {
 app.delete("/prayers/:id/saves", async (req, res) => {
   const { id } = req.params;
   const { user } = req;
+  
+  // Check if the user ID is 4
+  if (user.id !== 4) {
+    res.status(403).send("Forbidden");
+    return;
+  }
+
   try {
     const connection = await pool.getConnection();
     const [existingPrayer] = await connection.query("SELECT * FROM prayers WHERE prayerID=?", [id]);
@@ -415,8 +444,8 @@ app.delete("/prayers/:id/saves", async (req, res) => {
       return;
     }
     await pool.query("DELETE FROM saves WHERE userID=? AND prayerID=?", [user.id, id]);
-    res.status(204)
-    console.log("Successfully Unsaved")
+    res.status(204).send("Successfully Unsaved");
+    console.log("Successfully Unsaved");
   } catch (err) {
     console.error("Error deleting save:", err.message);
     res.status(500).send("Error deleting save");
