@@ -35,7 +35,7 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.get("/tags", async (req, res) => {
+app.get("/api/v1/tags", async (req, res) => {
   try {
     const conn = await pool.getConnection();
     console.log(req.user);
@@ -51,7 +51,7 @@ app.get("/tags", async (req, res) => {
   }
 });
 
-app.get("/tags/:id", async (req, res) => {
+app.get("/api/v1/tags/:id", async (req, res) => {
   try {
     const conn = await pool.getConnection();
     console.log(req.user);
@@ -74,7 +74,7 @@ app.get("/tags/:id", async (req, res) => {
 });
 
 // Create a new user
-app.post("/tags", async (req, res) => {
+app.post("/api/v1/tags", async (req, res) => {
   const { tagDescription } = req.body;
   try {
     const connection = await pool.getConnection();
@@ -94,7 +94,7 @@ app.post("/tags", async (req, res) => {
 });
 
 // PUT /api/v1/tags/:id
-app.put("/tags/:id", async (req, res) => {
+app.put("/api/v1/tags/:id", async (req, res) => {
   const { tagDescription } = req.body;
   try {
     const conn = await pool.getConnection();
@@ -122,7 +122,7 @@ app.put("/tags/:id", async (req, res) => {
 });
 
 //DELETE
-app.delete("/tags/:id", async (req, res) => {
+app.delete("/api/v1/tags/:id", async (req, res) => {
   try {
     const conn = await pool.getConnection();
     console.log(req.user);
@@ -148,7 +148,7 @@ app.delete("/tags/:id", async (req, res) => {
 });
 
 // GET /api/v1/prayers
-app.get("/prayers", async (req, res) => {
+app.get("/api/v1/prayers", async (req, res) => {
   try {
     const conn = await pool.getConnection();
 
@@ -164,7 +164,7 @@ app.get("/prayers", async (req, res) => {
 });
 
 // GET /api/v1/prayers/:id
-app.get("/prayers/:id", async (req, res) => {
+app.get("/api/v1/prayers/:id", async (req, res) => {
   try {
     const conn = await pool.getConnection();
 
@@ -184,7 +184,7 @@ app.get("/prayers/:id", async (req, res) => {
 });
 
 // POST /api/v1/prayers
-app.post("/prayers", async (req, res) => {
+app.post("/api/v1/prayers", async (req, res) => {
   try {
     const conn = await pool.getConnection();
 
@@ -204,7 +204,7 @@ app.post("/prayers", async (req, res) => {
 });
 
 // PUT /api/v1/prayers/:id
-app.put("/prayers/:id", async (req, res) => {
+app.put("/api/v1/prayers/:id", async (req, res) => {
   try {
     const conn = await pool.getConnection();
 
@@ -228,7 +228,7 @@ app.put("/prayers/:id", async (req, res) => {
 });
 
 // DELETE /api/v1/prayers/:id
-app.delete("/prayers/:id", async (req, res) => {
+app.delete("/api/v1/prayers/:id", async (req, res) => {
   const conn = await pool.getConnection();
   try {
     const { id } = req.params;
@@ -271,7 +271,7 @@ app.delete("/prayers/:id", async (req, res) => {
 });
 
 // Get all likes for a prayer
-app.get('/prayers/:id/likes', async (req, res) => {
+app.get('/api/v1/prayers/:id/likes', async (req, res) => {
   const { id: prayerID } = req.params;
 
   try {
@@ -296,7 +296,7 @@ app.get('/prayers/:id/likes', async (req, res) => {
 });
 
 // Like a prayer
-app.post("/prayers/:id/likes", async (req, res) => {
+app.post("/api/v1/prayers/:id/likes", async (req, res) => {
   const { id } = req.params;
   const { user } = req;
   
@@ -330,7 +330,7 @@ app.post("/prayers/:id/likes", async (req, res) => {
 });
 
 // Unlike a prayer
-app.delete("/prayers/:id/likes", async (req, res) => {
+app.delete("/api/v1/prayers/:id/likes", async (req, res) => {
   const { id } = req.params;
   const { user } = req;
   
@@ -369,7 +369,7 @@ app.delete("/prayers/:id/likes", async (req, res) => {
 
 
 // GET all saves of prayer with given id (by all users)
-app.get("/prayers/:id/saves", async (req, res) => {
+app.get("/api/v1/prayers/:id/saves", async (req, res) => {
   const { id } = req.params;
   try {
     const [existingPrayer] = await pool.query("SELECT * FROM prayers WHERE prayerID=?", [id]);
@@ -386,7 +386,7 @@ app.get("/prayers/:id/saves", async (req, res) => {
 });
 
 // Save a prayer
-app.post("/prayers/:id/saves", async (req, res) => {
+app.post("/api/v1/prayers/:id/saves", async (req, res) => {
   const { id } = req.params;
   const { user } = req;
   
@@ -420,7 +420,7 @@ app.post("/prayers/:id/saves", async (req, res) => {
 });
 
 // Unlike a prayer
-app.delete("/prayers/:id/saves", async (req, res) => {
+app.delete("/api/v1/prayers/:id/saves", async (req, res) => {
   const { id } = req.params;
   const { user } = req;
   
